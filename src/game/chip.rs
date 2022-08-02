@@ -1,4 +1,13 @@
 
+
+macro_rules! chip {
+    ($value:tt-$color:tt) => {
+        Chip::new(stringify!($color), $value)
+    };
+}
+
+pub(crate) use chip;
+
 #[derive(Debug)]
 pub struct Chip {
     pub color: String,

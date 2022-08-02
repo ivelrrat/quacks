@@ -66,6 +66,22 @@ impl Board {
         self.current_spot = 0;
         bag.shuffle(&mut thread_rng());
     }
+
+    pub fn score_money(&self) -> i32 {
+        self.spots[self.current_spot+1].money
+    }
+
+    pub fn score_points(&self) -> i32 {
+        self.spots[self.current_spot + 1].points
+    }
+
+    pub fn score_ruby(&self) -> i32 {
+        if self.spots[self.current_spot + 1].ruby {1} else {0}
+    }
+
+    pub fn has_exploded(&self) -> bool {
+        self.cherry_count > 7
+    }
 }
 
 impl std::fmt::Display for Board {

@@ -1,12 +1,18 @@
 
 use std::error::Error;
 
+use rand::Rng;
+
+use crate::game::ExplosionDecision;
+
 use super::Board;
 use super::Chip;
+use super::Player;
+use super::chip::chip;
 
-#[derive(Debug)]
 pub struct Game {
     pub name: String,
+    pub player: Box<dyn Player>,
 }
 
 impl Game {
@@ -15,104 +21,107 @@ impl Game {
         let mut board = Board::new();
 
         let mut bag = vec![
-            Chip::new("white", 1),
-            Chip::new("white", 1),
-            Chip::new("white", 1),
-            Chip::new("white", 1),
-            Chip::new("white", 2),
-            Chip::new("white", 2),
-            Chip::new("white", 3),
-            Chip::new("orange", 1),
-            Chip::new("green", 1),
+            chip!{1-white},
+            chip!{1-white},
+            chip!{1-white},
+            chip!{1-white},
+            chip!{2-white},
+            chip!{2-white},
+            chip!{3-white},
+            chip!{1-orange},
+            chip!{1-green},
         ];
 
-        let mut points = 0;
+        let mut total_points = 0;
+        let mut total_rubies = 0;
 
-        for i in 0..9 {
-             board.reset(&mut bag);
+        for i in 1..=9 {
 
-            while let Some(chip) = bag.pop() {
+            // round 6 we add a white chip
+            if i == 6 {
+                bag.push(chip!{1-white});
+            }
+
+            board.reset(&mut bag);
+
+            // ✔ player decides if they want to draw a chip
+            while let Some(chip) = self.player.draw_chip(&mut bag, &board) {
+                
+                // check if chip is white
+                // ◻ player decides if they want to use the flask
+
                 board.play(chip);
 
-                if board.cherry_count >= 7 {
+                if board.has_exploded() {
                     break;
                 }
             }
-
-            let mut r_points = 0;
-            let mut money = 0;
-            if board.cherry_count > 7 {
-                if i < 3 {
-                    money = board.spots[board.current_spot+1].money;
-                } else {
-                    r_points = board.spots[board.current_spot + 1].points;
+            
+            let mut points = 0;
+            let mut money = 0;            
+            if board.has_exploded() {
+                // ✔ player decides money or points if they explode
+                match self.player.money_or_points(i) {
+                    ExplosionDecision::Money => { money = board.score_money(); }
+                    ExplosionDecision::Points => { points = board.score_points(); }
                 }
             } else {
-                money = board.spots[board.current_spot+1].money;
-                r_points = board.spots[board.current_spot + 1].points;
+                // Roll the die
+                match rand::thread_rng().gen_range(0..6) {
+                    //doplet
+                    0 => {},
+                    1 => total_rubies += 1,
+                    2 => bag.push(chip!{1-orange}),
+                    3 => points +=2,
+                    4.. => points += 1,
+                    _ => {}
+                }
+
+                money = board.score_money();
+                points = board.score_points();
             }
 
-            if i == 8 && money > 0 {
-                r_points += money / 5;
+            /*
+                Add Chip action phase
+                - Green
+                - Purple
+                - Black
+            */
+
+            total_rubies += board.score_ruby();
+
+            // Last round convert money & rubies into points
+            if i == 9 {
+                if money > 0 {
+                    points += money / 5;
+                }
+                
+                if total_rubies > 0 {
+                    points += total_rubies / 2;
+                }
+            } else {
+                // ✔ player decides what chips to buy
+                match self.player.buy_chips(i, money) {
+                    (None, None) => {},
+                    (None, Some(chip)) => bag.push(chip),
+                    (Some(chip), None) => bag.push(chip),
+                    (Some(chip1), Some(chip2)) => {
+                        bag.push(chip1);
+                        bag.push(chip2);
+                    },
+                }
+
+                // ◻ player decides if they refill their flask
+                // ◻ player decides if they buy a droplet space
             }
             
-            points += r_points;
+            total_points += points;
             println!("{} Remaing chips: {:?}", i, bag);
             println!("{} Board:\n{}", i, board);
             println!("{} cherry count is: {} {}", i, board.cherry_count, if board.cherry_count > 7 {"and you exploded!"} else {"and you are safe!"});
-            println!("{} Points this round: {}", i, r_points);
-            println!("{} Total points is: {}", i, points);
-
-            // Orange 1 - 3
-            
-            // Blue 1 - 5
-            // Blue 2 - 10
-            // Blue 4 - 19
-            
-            // Red 1 - 4
-            // Red 2 - 8
-            // Red 4 - 14
-
-            // Green 1 - 4
-            // Green 2 - 8
-            // Green 4 - 14
-            
-            // Black 1 - 10
-            
-            // Yellow 1 - 8
-            // Yellow 2 - 12
-            // Yellow 4 - 18
-            
-            // Purple 1 - 9
-
-            match money {
-                0..=2   => {},
-                3       => { 
-                    bag.push(Chip::new("orange", 1));
-                },
-                4..=6   => { 
-                    bag.push(Chip::new("red", 1));
-                },
-                7       => { 
-                    bag.push(Chip::new("orange", 1));
-                    bag.push(Chip::new("red", 1));
-                },
-                8..=10  => {
-                     bag.push(Chip::new("red", 2)) 
-                },
-                11..=13 => { 
-                    bag.push(Chip::new("orange", 1));
-                    bag.push(Chip::new("red", 2));
-                },
-                14..=16  => {
-                    bag.push(Chip::new("red", 4));
-                },
-                17..    => {
-                    bag.push(Chip::new("orange", 1));
-                    bag.push(Chip::new("red", 4));
-                },
-                _       => {},
-            }
+            println!("{} Points this round: {}", i, points);
+            println!("{} Total rubies: {}", i, total_rubies);
+            println!("{} Total points is: {}", i, total_points);
         }       
 
         Ok(())
