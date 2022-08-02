@@ -2,6 +2,7 @@
 
 use super::Chip;
 
+#[derive(Debug)]
 pub struct Spot {
     pub money: i32,
     pub points: i32,

@@ -12,11 +12,7 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn play(&mut self, chip: Chip) {
-
-        if self.current_spot >= self.spots.len() - 2 {
-            return;
-        }
+    pub fn play(&mut self, chip: Chip) -> &Spot {
         
         let mut value = chip.size;
 
@@ -43,6 +39,8 @@ impl Board {
         }
 
         self.spots[self.current_spot].chip = Some(chip);
+
+        &self.spots[self.current_spot]
     }
 
     pub fn new() -> Self {
@@ -56,7 +54,7 @@ impl Board {
 
     pub fn reset(&mut self, bag: &mut Vec<Chip>) {
         for spot in &mut self.spots {
-            if let Some(chip) = std::mem::replace(&mut spot.chip, None) {
+            if let Some(chip) = spot.chip.take() {
                 bag.push(chip);
             }
         }
@@ -81,6 +79,22 @@ impl Board {
 
     pub fn has_exploded(&self) -> bool {
         self.cherry_count > 7
+    }
+    
+    pub fn is_full(&self) -> bool {
+        self.current_spot >= self.spots.len() - 2
+    }
+
+    pub fn pop_chip_to_bag(&mut self, bag: &mut Vec<Chip>) {
+        if let Some(chip) = self.spots[self.current_spot].chip.take() {
+            self.current_spot -= chip.size as usize;
+            bag.push(chip);
+            bag.shuffle(&mut thread_rng());
+        }
+    }
+
+    pub fn last_chip(&self) -> Option<&Chip> {
+        self.spots[self.current_spot].chip.as_ref()
     }
 }
 

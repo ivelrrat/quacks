@@ -4,7 +4,6 @@ use std::error::Error;
 use rand::Rng;
 
 use crate::game::ExplosionDecision;
-
 use super::Board;
 use super::Chip;
 use super::Player;
@@ -32,8 +31,10 @@ impl Game {
             chip!{1-green},
         ];
 
+        let mut flask = true;
+
         let mut total_points = 0;
-        let mut total_rubies = 0;
+        let mut total_rubies = 1;
 
         for i in 1..=9 {
 
@@ -45,15 +46,30 @@ impl Game {
             board.reset(&mut bag);
 
             // ✔ player decides if they want to draw a chip
-            while let Some(chip) = self.player.draw_chip(&mut bag, &board) {
-                
-                // check if chip is white
-                // ◻ player decides if they want to use the flask
+            while self.player.should_draw_chip(i, &board, bag.len() as i32) {
+
+                let chip = match bag.pop() {
+                    None => break,
+                    Some(chip) => chip,
+                };
 
                 board.play(chip);
-
+                
                 if board.has_exploded() {
                     break;
+                }
+                
+                if board.is_full() {
+                    break;
+                }
+
+                // check if chip is white
+                if let Some(chip) = board.last_chip().filter(|c| c.color == "white") {
+                    // ✔ player decides if they want to use the flask
+                    if flask && self.player.should_use_flask(i, &board, chip, total_rubies) {
+                        flask = false;
+                        board.pop_chip_to_bag(&mut bag);        
+                    }
                 }
             }
             
@@ -78,7 +94,7 @@ impl Game {
                 }
 
                 money = board.score_money();
-                points = board.score_points();
+                points += board.score_points();
             }
 
             /*
@@ -111,7 +127,12 @@ impl Game {
                     },
                 }
 
-                // ◻ player decides if they refill their flask
+                // ✔ player decides if they refill their flask
+                if total_rubies >=2 && !flask && self.player.should_refill_flask(i, total_rubies) {
+                    flask = true;
+                    total_rubies -= 2;
+                }
+
                 // ◻ player decides if they buy a droplet space
             }
             
@@ -119,6 +140,7 @@ impl Game {
             println!("{} Remaing chips: {:?}", i, bag);
             println!("{} Board:\n{}", i, board);
             println!("{} cherry count is: {} {}", i, board.cherry_count, if board.cherry_count > 7 {"and you exploded!"} else {"and you are safe!"});
+            println!("{} Money this round: {}", i, money);
             println!("{} Points this round: {}", i, points);
             println!("{} Total rubies: {}", i, total_rubies);
             println!("{} Total points is: {}", i, total_points);

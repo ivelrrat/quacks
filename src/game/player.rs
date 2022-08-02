@@ -1,21 +1,18 @@
 use super::{Chip, Board, ExplosionDecision, chip::chip};
 
 pub trait Player {
-    fn draw_chip(&self, bag: &mut Vec<Chip>, board: &Board) -> Option<Chip>;
+    fn should_draw_chip(&self, round: i32, board: &Board, bag_count: i32) -> bool;
     fn money_or_points(&self, round: i32) -> ExplosionDecision;
     fn buy_chips(&self, round: i32, money: i32) -> (Option<Chip>, Option<Chip>);
+    fn should_use_flask(&self, round: i32, board: &Board, chip: &Chip, rubies: i32) -> bool;
+    fn should_refill_flask(&self, round:i32, rubies: i32) -> bool;
 }
 
 pub struct BasicPlayer;
 
 impl Player for BasicPlayer {
-    fn draw_chip(&self, bag: &mut Vec<Chip>, board: &Board) -> Option<Chip> {
-
-        if board.cherry_count >= 7 {
-            return None;
-        }
-        
-        bag.pop()
+    fn should_draw_chip(&self, _round: i32, board: &Board, _bag_count: i32) -> bool {
+        board.cherry_count < 7
     }
 
     fn money_or_points(&self, round: i32) -> ExplosionDecision {
@@ -58,5 +55,13 @@ impl Player for BasicPlayer {
             17..    => { (Some(chip!(1-orange)), Some(chip!(4-red))) },
             _       => { (None, None) },
         }
+    }
+
+    fn should_use_flask(&self, _round: i32, _board: &Board, _chip: &Chip, rubies: i32) -> bool {
+        rubies >= 2
+    }
+
+    fn should_refill_flask(&self, _round:i32, rubies: i32) -> bool {
+        rubies >= 2
     }
 }
