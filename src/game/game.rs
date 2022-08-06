@@ -6,12 +6,12 @@ use rand::Rng;
 use crate::game::ExplosionDecision;
 use super::Board;
 use super::Chip;
-use super::Player;
+use super::PlayerSkill;
 use super::chip::chip;
 
 pub struct Game {
     pub name: String,
-    pub player: Box<dyn Player>,
+    pub player: Box<dyn PlayerSkill>,
 }
 
 impl Game {

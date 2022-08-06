@@ -1,6 +1,6 @@
 use super::{Chip, Board, ExplosionDecision, chip::chip};
 
-pub trait Player {
+pub trait PlayerSkill {
     fn should_draw_chip(&self, round: i32, board: &Board, bag_count: i32) -> bool;
     fn money_or_points(&self, round: i32) -> ExplosionDecision;
     fn buy_chips(&self, round: i32, money: i32) -> Option<Vec<Chip>>;
@@ -11,7 +11,7 @@ pub trait Player {
 
 pub struct BasicPlayer;
 
-impl Player for BasicPlayer {
+impl PlayerSkill for BasicPlayer {
     fn should_draw_chip(&self, _round: i32, board: &Board, _bag_count: i32) -> bool {
         board.cherry_count < 7
     }
