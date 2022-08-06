@@ -7,13 +7,14 @@ use rand::thread_rng;
 pub struct Board {
     pub spots: Vec<Spot>,
     pub current_spot: usize,
+    pub droplet: usize,
     pub cherry_count: i32,
     pub orange_count: i32,
 }
 
 impl Board {
-    pub fn play(&mut self, chip: Chip) -> &Spot {
-        
+    pub fn play(&mut self, chip: Chip) {
+       
         let mut value = chip.size;
 
         match chip.color.as_str() {
@@ -21,16 +22,16 @@ impl Board {
                 self.cherry_count += chip.size;
             },
             "red" => {
-                if self.orange_count >= 3 {
-                    value +=2;
-                } else if self.orange_count > 0 {
-                    value +=1;
+                match self.orange_count {
+                    1 | 2   => value +=1,
+                    3..     => value +=2,
+                    _ => {}
                 }
             },
             "orange" => {
                 self.orange_count += 1;
             }
-            _ => {}
+            _ => (),
         }
 
         self.current_spot += value as usize;
@@ -39,14 +40,13 @@ impl Board {
         }
 
         self.spots[self.current_spot].chip = Some(chip);
-
-        &self.spots[self.current_spot]
     }
 
     pub fn new() -> Self {
         Self {
             spots: load_board(),
             current_spot: 0,
+            droplet: 0,
             cherry_count: 0,
             orange_count: 0,
         }
@@ -54,7 +54,7 @@ impl Board {
 
     pub fn reset(&mut self, bag: &mut Vec<Chip>) {
         for spot in &mut self.spots {
-            if let Some(chip) = spot.chip.take() {
+            if let Some(chip) = spot.chip.take().filter(|c| c.color != "droplet") {
                 bag.push(chip);
             }
         }
@@ -62,6 +62,7 @@ impl Board {
         self.orange_count = 0;
         self.cherry_count = 0;
         self.current_spot = 0;
+        self.play(Chip::new("droplet", self.droplet as i32));
         bag.shuffle(&mut thread_rng());
     }
 

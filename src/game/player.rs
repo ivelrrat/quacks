@@ -3,9 +3,10 @@ use super::{Chip, Board, ExplosionDecision, chip::chip};
 pub trait Player {
     fn should_draw_chip(&self, round: i32, board: &Board, bag_count: i32) -> bool;
     fn money_or_points(&self, round: i32) -> ExplosionDecision;
-    fn buy_chips(&self, round: i32, money: i32) -> (Option<Chip>, Option<Chip>);
+    fn buy_chips(&self, round: i32, money: i32) -> Option<Vec<Chip>>;
     fn should_use_flask(&self, round: i32, board: &Board, chip: &Chip, rubies: i32) -> bool;
     fn should_refill_flask(&self, round:i32, rubies: i32) -> bool;
+    fn should_buy_droplet(&self, round:i32, rubies: i32) -> bool;
 }
 
 pub struct BasicPlayer;
@@ -44,16 +45,16 @@ impl Player for BasicPlayer {
     // Yellow 4 - 18
     
     // Purple 1 - 9
-    fn buy_chips(&self, _round: i32, money: i32) -> (Option<Chip>, Option<Chip>) {
+    fn buy_chips(&self, _round: i32, money: i32) -> Option<Vec<Chip>> {
         match money {
-            3       => { (Some(chip!{1-orange}), None) },
-            4..=6   => { (Some(chip!(1-red)), None) },
-            7       => { (Some(chip!(1-orange)), Some(chip!(1-red))) },
-            8..=10  => { (Some(chip!(2-red)), None) },
-            11..=13 => { (Some(chip!(1-orange)), Some(chip!(2-red))) },
-            14..=16 => { (Some(chip!(4-red)), None) },
-            17..    => { (Some(chip!(1-orange)), Some(chip!(4-red))) },
-            _       => { (None, None) },
+            3       => { Some(vec![chip!{1-orange}]) },
+            4..=6   => { Some(vec![chip!(1-red)]) },
+            7       => { Some(vec![chip!(1-orange), chip!(1-red)]) },
+            8..=10  => { Some(vec![chip!(2-red)]) },
+            11..=13 => { Some(vec![chip!(1-orange), chip!(2-red)]) },
+            14..=16 => { Some(vec![chip!(4-red)]) },
+            17..    => { Some(vec![chip!(1-orange), chip!(4-red)]) },
+            _       => { None },
         }
     }
 
@@ -64,4 +65,9 @@ impl Player for BasicPlayer {
     fn should_refill_flask(&self, _round:i32, rubies: i32) -> bool {
         rubies >= 2
     }
+    
+    fn should_buy_droplet(&self, _round:i32, rubies: i32) -> bool {
+        rubies >= 2
+    }
+
 }

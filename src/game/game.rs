@@ -38,7 +38,7 @@ impl Game {
 
         for i in 1..=9 {
 
-            // round 6 we add a white chip
+            // An additional white chip is added in round 6
             if i == 6 {
                 bag.push(chip!{1-white});
             }
@@ -63,7 +63,6 @@ impl Game {
                     break;
                 }
 
-                // check if chip is white
                 if let Some(chip) = board.last_chip().filter(|c| c.color == "white") {
                     // ✔ player decides if they want to use the flask
                     if flask && self.player.should_use_flask(i, &board, chip, total_rubies) {
@@ -117,15 +116,9 @@ impl Game {
                 }
             } else {
                 // ✔ player decides what chips to buy
-                match self.player.buy_chips(i, money) {
-                    (None, None) => {},
-                    (None, Some(chip)) => bag.push(chip),
-                    (Some(chip), None) => bag.push(chip),
-                    (Some(chip1), Some(chip2)) => {
-                        bag.push(chip1);
-                        bag.push(chip2);
-                    },
-                }
+                if let Some(mut chips) = self.player.buy_chips(i, money) {
+                    bag.append(&mut chips);
+                }              
 
                 // ✔ player decides if they refill their flask
                 if total_rubies >=2 && !flask && self.player.should_refill_flask(i, total_rubies) {
@@ -134,9 +127,14 @@ impl Game {
                 }
 
                 // ◻ player decides if they buy a droplet space
+                while total_rubies >=2 && self.player.should_buy_droplet(i, total_rubies) {
+                    total_rubies -= 2;
+                    board.droplet += 1;
+                }
             }
             
             total_points += points;
+            println!("\n\nRESULTS - Round {}\n\n", i);
             println!("{} Remaing chips: {:?}", i, bag);
             println!("{} Board:\n{}", i, board);
             println!("{} cherry count is: {} {}", i, board.cherry_count, if board.cherry_count > 7 {"and you exploded!"} else {"and you are safe!"});
@@ -144,6 +142,7 @@ impl Game {
             println!("{} Points this round: {}", i, points);
             println!("{} Total rubies: {}", i, total_rubies);
             println!("{} Total points is: {}", i, total_points);
+            println!("{} Droplet: {}", i, board.droplet);
         }       
 
         Ok(())
