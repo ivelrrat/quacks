@@ -83,8 +83,7 @@ impl Game {
             } else {
                 // Roll the die
                 match rand::thread_rng().gen_range(0..6) {
-                    //doplet
-                    0 => {},
+                    0 => board.droplet += 1,
                     1 => total_rubies += 1,
                     2 => bag.push(chip!{1-orange}),
                     3 => points +=2,
@@ -98,9 +97,9 @@ impl Game {
 
             /*
                 Add Chip action phase
-                - Green
-                - Purple
-                - Black
+                ◻ Green
+                ◻ Purple
+                ◻ Black
             */
 
             total_rubies += board.score_ruby();
@@ -126,7 +125,7 @@ impl Game {
                     total_rubies -= 2;
                 }
 
-                // ◻ player decides if they buy a droplet space
+                // ✔ player decides if they buy a droplet space
                 while total_rubies >=2 && self.player.should_buy_droplet(i, total_rubies) {
                     total_rubies -= 2;
                     board.droplet += 1;
