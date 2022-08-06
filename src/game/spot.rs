@@ -23,6 +23,10 @@ impl Spot {
 
 impl std::fmt::Display for Spot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({})[{}]{}", self.money, self.points, if self.ruby {"*"} else {" "})
+        let chip = self.chip
+                                .as_ref()
+                                .map_or("".to_string(), |c| format!("- {}", c));
+
+        write!(f, "({})[{}]{} {chip}", self.money, self.points, if self.ruby {"*"} else {" "})
     }
 }

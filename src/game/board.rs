@@ -102,29 +102,14 @@ impl Board {
 impl std::fmt::Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         
-        self.spots.iter().enumerate().for_each(|(i, spot)| {
-            if i <= self.current_spot + 1 {
-                writeln!(
-                    f,
-                    "{}: {} {}",
-                    i,
-                    spot,
-                    match &spot.chip {
-                        Some(chip) => {
-                            format!("- {}", &chip)
-                        }
-                        None => {
-                            "".to_string()
-                        }
-                    }
-                ).expect("Failed to write message");
-            }
+        self.spots[0..=(self.current_spot + 1)].iter().enumerate().for_each(|(i, spot)| {
+            writeln!(f, "{}: {}", i, spot).expect("Failed to write message");
         });
         Ok(())
     }
 }
 
-pub fn load_board() -> Vec<Spot> {
+fn load_board() -> Vec<Spot> {
     let mut reader =
         csv::Reader::from_reader(File::open("src/game/board.csv").expect("A CSV file"));
 
