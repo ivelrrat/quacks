@@ -1,98 +1,65 @@
-
 use std::error::Error;
-
 use rand::Rng;
-
-use crate::game::ExplosionDecision;
-use super::Board;
-use super::Chip;
-use super::PlayerSkill;
-use super::chip::chip;
+use super::{Chip, chip::chip, ExplosionDecision, Player};
 
 pub struct Game {
     pub name: String,
-    pub player: Box<dyn PlayerSkill>,
+    pub player: Player,
 }
 
 impl Game {
-    pub fn run(&self) -> Result<(), Box<dyn Error>> {
-
-        let mut board = Board::new();
-
-        let mut bag = vec![
-            chip!{1-white},
-            chip!{1-white},
-            chip!{1-white},
-            chip!{1-white},
-            chip!{2-white},
-            chip!{2-white},
-            chip!{3-white},
-            chip!{1-orange},
-            chip!{1-green},
-        ];
-
-        let mut flask = true;
-
-        let mut total_points = 0;
-        let mut total_rubies = 1;
+    pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
 
         for i in 1..=9 {
 
+            let player = &mut self.player;
+
             // An additional white chip is added in round 6
             if i == 6 {
-                bag.push(chip!{1-white});
+                player.bag.push(chip!{1-white});
             }
 
-            board.reset(&mut bag);
+            player.board.reset(&mut player.bag);
 
             // ✔ player decides if they want to draw a chip
-            while self.player.should_draw_chip(i, &board, bag.len() as i32) {
+            while player.should_draw_chip(i) {
 
-                let chip = match bag.pop() {
+                let chip = match player.bag.pop() {
                     None => break,
                     Some(chip) => chip,
                 };
 
-                board.play(chip);
+                player.board.play(chip);
                 
-                if board.has_exploded() {
-                    break;
-                }
-                
-                if board.is_full() {
+                if player.is_done() {
                     break;
                 }
 
-                if let Some(chip) = board.last_chip().filter(|c| c.color == "white") {
-                    // ✔ player decides if they want to use the flask
-                    if flask && self.player.should_use_flask(i, &board, chip, total_rubies) {
-                        flask = false;
-                        board.pop_chip_to_bag(&mut bag);        
-                    }
-                }
+                // ✔ player decides if they want to use the flask
+                player.handle_flask_descision(i);
             }
             
             let mut points = 0;
             let mut money = 0;            
-            if board.has_exploded() {
+            if player.board.has_exploded() {
                 // ✔ player decides money or points if they explode
-                match self.player.money_or_points(i) {
-                    ExplosionDecision::Money => { money = board.score_money(); }
-                    ExplosionDecision::Points => { points = board.score_points(); }
+                match player.money_or_points(i) {
+                    ExplosionDecision::Money => { money = player.board.score_money(); }
+                    ExplosionDecision::Points => { points = player.board.score_points(); }
                 }
             } else {
                 // Roll the die
                 match rand::thread_rng().gen_range(0..6) {
-                    0 => board.droplet += 1,
-                    1 => total_rubies += 1,
-                    2 => bag.push(chip!{1-orange}),
+                    0 => player.board.droplet += 1,
+                    1 => player.total_rubies += 1,
+                    2 => player.bag.push(chip!{1-orange}),
                     3 => points +=2,
                     4.. => points += 1,
                     _ => {}
                 }
 
-                money = board.score_money();
-                points += board.score_points();
+                money = player.board.score_money();
+                points += player.board.score_points();
             }
 
             /*
@@ -102,7 +69,7 @@ impl Game {
                 ◻ Black
             */
 
-            total_rubies += board.score_ruby();
+            player.total_rubies += player.board.score_ruby();
 
             // Last round convert money & rubies into points
             if i == 9 {
@@ -110,38 +77,38 @@ impl Game {
                     points += money / 5;
                 }
                 
-                if total_rubies > 0 {
-                    points += total_rubies / 2;
+                if player.total_rubies > 0 {
+                    points += player.total_rubies / 2;
                 }
             } else {
                 // ✔ player decides what chips to buy
-                if let Some(mut chips) = self.player.buy_chips(i, money) {
-                    bag.append(&mut chips);
+                if let Some(mut chips) = player.buy_chips(i, money) {
+                    player.bag.append(&mut chips);
                 }              
 
                 // ✔ player decides if they refill their flask
-                if total_rubies >=2 && !flask && self.player.should_refill_flask(i, total_rubies) {
-                    flask = true;
-                    total_rubies -= 2;
+                if player.total_rubies >=2 && !player.flask && player.should_refill_flask(i) {
+                    player.flask = true;
+                    player.total_rubies -= 2;
                 }
 
                 // ✔ player decides if they buy a droplet space
-                while total_rubies >=2 && self.player.should_buy_droplet(i, total_rubies) {
-                    total_rubies -= 2;
-                    board.droplet += 1;
+                while player.total_rubies >=2 && player.should_buy_droplet(i) {
+                    player.total_rubies -= 2;
+                    player.board.droplet += 1;
                 }
             }
             
-            total_points += points;
+            player.total_points += points;
             println!("\n\nRESULTS - Round {}\n\n", i);
-            println!("{} Remaing chips: {:?}", i, bag);
-            println!("{} Board:\n{}", i, board);
-            println!("{} cherry count is: {} {}", i, board.cherry_count, if board.cherry_count > 7 {"and you exploded!"} else {"and you are safe!"});
+            println!("{} Remaing chips: {:?}", i, player.bag);
+            println!("{} Board:\n{}", i, player.board);
+            println!("{} cherry count is: {} {}", i, player.board.cherry_count, if player.board.cherry_count > 7 {"and you exploded!"} else {"and you are safe!"});
             println!("{} Money this round: {}", i, money);
             println!("{} Points this round: {}", i, points);
-            println!("{} Total rubies: {}", i, total_rubies);
-            println!("{} Total points is: {}", i, total_points);
-            println!("{} Droplet: {}", i, board.droplet);
+            println!("{} Total rubies: {}", i, player.total_rubies);
+            println!("{} Total points is: {}", i, player.total_points);
+            println!("{} Droplet: {}", i, player.board.droplet);
         }       
 
         Ok(())
