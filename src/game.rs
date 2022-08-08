@@ -13,6 +13,8 @@ pub use player::Player;
 pub use player_skill::PlayerSkill;
 pub use player_skill::BasicPlayer;
 
+const LAST_ROUND: i32 = 9;
+
 pub enum ExplosionDecision {
     Money,
     Points,
