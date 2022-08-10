@@ -22,11 +22,17 @@ impl Board {
                 self.cherry_count += chip.size;
             },
             "red" => {
+
+                /* 
+                    Rule book 1: 
+                    If there 1 or 2 orange chips in your pot, move the red chip an additional 1 space forward.
+                    If there are 3 or more orange chips in your pot, move it an additional 2 spaces forward.
+                */
                 match self.orange_count {
-                    1 | 2   => value +=1,
-                    3..     => value +=2,
-                    _ => {}
-                }
+                    1 | 2 => value +=1,
+                    3.. => value +=2,
+                    _ => ()
+                };
             },
             "orange" => {
                 self.orange_count += 1;
@@ -96,6 +102,31 @@ impl Board {
 
     pub fn last_chip(&self) -> Option<&Chip> {
         self.spots[self.current_spot].chip.as_ref()
+    }
+
+    pub fn last_two_chips(&self) -> [Option<&Chip>; 2] {
+        let mut second = self.current_spot - 1;
+        while self.spots[second].chip.is_none() {
+            second -= 1;
+
+            if second == 0 {
+                break;
+            }
+        }
+
+        [self.spots[self.current_spot].chip.as_ref(), self.spots[second].chip.as_ref()]
+    }
+
+    pub fn all_white_chips(&self) -> Vec<&Chip> {
+
+        let mut white_chips = Vec::<&Chip>::new();
+        for spot in &self.spots {
+            if let Some(chip) = spot.chip.as_ref().filter(|c| c.color == "white") {
+                white_chips.push(chip);
+            }
+        }
+
+        return white_chips;
     }
 }
 

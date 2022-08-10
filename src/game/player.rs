@@ -39,12 +39,6 @@ impl Player {
         self.skill.should_draw_chip(round, &self.board, self.bag.len() as i32)
     }
 
-    pub fn handle_buy_chips_decision(&mut self, round: i32) {
-        if let Some(mut chips) = self.skill.buy_chips(round, self.money) {
-            self.bag.append(&mut chips);
-        }
-    }
-
     pub fn handle_flask_descision(&mut self, round: i32) {
         if !self.flask {
             return;
@@ -55,28 +49,6 @@ impl Player {
                 self.flask = false;
                 self.board.pop_chip_to_bag(&mut self.bag);        
             }
-        }
-    }
-
-    pub fn handle_refill_flask_decision(&mut self, round:i32) {
-        if self.flask {
-            return;
-        }
-
-        if self.rubies < 2 {
-            return;
-        }
-
-        if self.skill.should_refill_flask(round, self.rubies) {
-            self.flask = true;
-            self.rubies -= 2;
-        }
-    }
-
-    pub fn handle_buy_droplet_decision(&mut self, round:i32) {
-        while self.rubies >=2 && self.skill.should_buy_droplet(round, self.rubies) {
-            self.rubies -= 2;
-            self.board.droplet += 1;
         }
     }
 
@@ -94,10 +66,22 @@ impl Player {
 
     pub fn reset(&mut self) {
         self.board.reset(&mut self.bag);
-
         self.money = 0;
     }
 
+     //Handle evaluation phase A (die roll)
+     pub fn roll_die(&mut self)  {
+        match rand::thread_rng().gen_range(0..6) {
+            0 => self.board.droplet += 1,
+            1 => self.rubies += 1,
+            2 => self.bag.push(chip!{1-orange}),
+            3 => self.points +=2,
+            4 | 5 => self.points += 1,
+            _ => {}
+        }
+    }
+
+    //Handle evaluation phase C (rubies), D (Victory Points), part of E (money for buying chips)
     pub fn score(&mut self, round: i32) {
         self.rubies += self.board.score_ruby();
 
@@ -119,14 +103,35 @@ impl Player {
         }
     }
 
-    pub fn roll_die(&mut self)  {
-        match rand::thread_rng().gen_range(0..6) {
-            0 => self.board.droplet += 1,
-            1 => self.rubies += 1,
-            2 => self.bag.push(chip!{1-orange}),
-            3 => self.points +=2,
-            4 | 5 => self.points += 1,
-            _ => {}
+    //Handle evaluation phase E (buy chips)
+    pub fn handle_buy_chips_decision(&mut self, round: i32) {
+        if let Some(mut chips) = self.skill.buy_chips(round, self.money) {
+            self.bag.append(&mut chips);
         }
     }
+
+    //Handle evaluation phase F (buy flask)
+    pub fn handle_refill_flask_decision(&mut self, round:i32) {
+        if self.flask {
+            return;
+        }
+
+        if self.rubies < 2 {
+            return;
+        }
+
+        if self.skill.should_refill_flask(round, self.rubies) {
+            self.flask = true;
+            self.rubies -= 2;
+        }
+    }
+
+    //Handle evaluation phase F (buy droplet)
+    pub fn handle_buy_droplet_decision(&mut self, round:i32) {
+        while self.rubies >=2 && self.skill.should_buy_droplet(round, self.rubies) {
+            self.rubies -= 2;
+            self.board.droplet += 1;
+        }
+    }
+
 }
