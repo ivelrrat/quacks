@@ -1,7 +1,8 @@
 mod game;
 
 use std::process;
-use game::{BasicPlayer, BuysGreen, Player, Game};
+use game::{BasicPlayer, Player, Game};
+// use game::BuysGreen;
 
 fn main() {
     println!("Quacks of Quedlinburg - Sim");
@@ -21,7 +22,7 @@ fn main() {
         }
     
         points += game.player.points;
-        println!("{}", game.player.points);
+        // println!("{}", game.player.points);
     }
 
     println!("AVG: {points}/{MAX_GAMES}={}", points as f64 /MAX_GAMES as f64);

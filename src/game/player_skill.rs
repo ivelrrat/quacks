@@ -62,6 +62,9 @@ pub trait BuyChipsSkill {
 
 pub trait PlayerSkill: BaseSkills + BuyChipsSkill {}
 
+
+// The BasicPlayer skill buys Red & Orange chips.
+// TODO: rename this to "BuysRedChips"
 pub struct BasicPlayer;
 
 impl BaseSkills for BasicPlayer {}
@@ -103,7 +106,6 @@ impl BuyChipsSkill for BasicPlayer {
 }
 
 impl PlayerSkill for BasicPlayer {}
-
 
 pub struct BuysGreen {}
 
