@@ -1,6 +1,5 @@
 use super::Chip;
 use super::Spot;
-use std::{fs::File, process};
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
@@ -141,24 +140,60 @@ impl std::fmt::Display for Board {
 }
 
 fn load_board() -> Vec<Spot> {
-    let mut reader =
-        csv::Reader::from_reader(File::open("src/game/board.csv").expect("A CSV file"));
-
-    let mut board = Vec::new();
-
-    for result in reader.records() {
-        match result {
-            Ok(record) => board.push(Spot::new(
-                record[0].parse::<i32>().expect("An integer money value"),
-                record[1].parse::<i32>().expect("An integer point value"),
-                &record[2] == "1",
-            )),
-            Err(err) => {
-                println!("Error reading CSV from board.csv: {}", err);
-                process::exit(1);
-            }
-        }
-    }
-
-    return board;
+    return vec![
+        Spot::new(0,0,false),
+        Spot::new(1,0,false),
+        Spot::new(2,0,false),
+        Spot::new(3,0,false),
+        Spot::new(4,0,false),
+        Spot::new(5,0,true),
+        Spot::new(6,1,false),
+        Spot::new(7,1,false),
+        Spot::new(8,1,false),
+        Spot::new(9,1,true),
+        Spot::new(10,2,false),
+        Spot::new(11,2,false),
+        Spot::new(12,2,false),
+        Spot::new(13,2,true),
+        Spot::new(14,3,false),
+        Spot::new(15,3,false),
+        Spot::new(15,3,true),
+        Spot::new(16,3,false),
+        Spot::new(16,4,false),
+        Spot::new(17,4,false),
+        Spot::new(17,4,true),
+        Spot::new(18,4,false),
+        Spot::new(18,5,false),
+        Spot::new(19,5,false),
+        Spot::new(19,5,true),
+        Spot::new(20,5,false),
+        Spot::new(20,6,false),
+        Spot::new(21,6,false),
+        Spot::new(21,6,true),
+        Spot::new(22,7,false),
+        Spot::new(22,7,true),
+        Spot::new(23,7,false),
+        Spot::new(23,8,false),
+        Spot::new(24,8,false),
+        Spot::new(24,8,true),
+        Spot::new(25,9,false),
+        Spot::new(25,9,true),
+        Spot::new(26,9,false),
+        Spot::new(26,10,false),
+        Spot::new(27,10,false),
+        Spot::new(27,10,true),
+        Spot::new(28,11,false),
+        Spot::new(28,11,true),
+        Spot::new(29,11,false),
+        Spot::new(29,12,false),
+        Spot::new(30,12,false),
+        Spot::new(30,12,true),
+        Spot::new(31,12,false),
+        Spot::new(31,13,false),
+        Spot::new(32,13,false),
+        Spot::new(32,13,true),
+        Spot::new(33,14,false),
+        Spot::new(33,14,true),
+        Spot::new(35,15,false),
+    ];
 }
