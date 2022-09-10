@@ -24,7 +24,7 @@ impl Game {
                     Some(chip) => chip,
                 };
 
-                player.board.play(chip);
+                player.play(chip);
                 if player.is_done() {
                     break;
                 }

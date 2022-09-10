@@ -21,7 +21,6 @@ impl Board {
                 self.cherry_count += chip.size;
             },
             "red" => {
-
                 /* 
                     Rule book 1: 
                     If there 1 or 2 orange chips in your pot, move the red chip an additional 1 space forward.

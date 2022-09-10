@@ -54,6 +54,24 @@ pub trait BaseSkills {
     fn should_buy_droplet(&self, _round:i32, rubies: i32) -> bool {
         rubies >= 2
     }
+
+    fn choose_one(&self, chips: &[Chip]) -> Option<usize> {
+
+        let mut decision = None;
+        let mut max = 0;
+        for (i, chip) in chips.iter().enumerate() {
+            if chip.color == "white" {
+                continue;
+            }
+
+            if chip.size > max {
+                decision = Some(i);
+                max = chip.size;
+            }
+        }
+
+        decision
+    }
 }
 
 pub trait BuyChipsSkill {
@@ -130,3 +148,27 @@ impl BuyChipsSkill for BuysGreen {
 }
 
 impl PlayerSkill for BuysGreen {}
+
+pub struct BuysBlue {}
+
+impl BaseSkills for BuysBlue {}
+
+impl BuyChipsSkill for BuysBlue {
+    // Blue 1 - 5
+    // Blue 2 - 10
+    // Blue 4 - 19
+    fn buy_chips(&self, _round: i32, money: i32) -> Option<Vec<Chip>> {
+        match money {
+            3|4     => { Some(vec![chip!{1-orange}]) },
+            5..=7   => { Some(vec![chip!(1-blue)]) },
+            8|9     => { Some(vec![chip!(1-orange), chip!(1-blue)]) },
+            10..=12 => { Some(vec![chip!(2-blue)]) },
+            13..=18 => { Some(vec![chip!(1-orange), chip!(2-blue)]) },
+            19..=21 => { Some(vec![chip!(4-blue)]) },
+            22..    => { Some(vec![chip!(1-orange), chip!(4-blue)]) },
+            _       => { None },
+        }
+    }
+}
+
+impl PlayerSkill for BuysBlue {}

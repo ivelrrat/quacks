@@ -1,4 +1,6 @@
 use rand::Rng;
+use rand::thread_rng;
+use rand::prelude::SliceRandom;
 use super::{Board, Chip, chip::chip, PlayerSkill, ExplosionDecision, LAST_ROUND};
 
 pub struct Player {
@@ -32,6 +34,39 @@ impl Player {
             rubies: 1,
             skill: Box::new(skill),
             money: 0,
+        }
+    }
+
+    pub fn play(&mut self, chip: Chip) {
+
+        match chip.color.as_str() {
+            "blue" => {
+                /*
+                    Rule book 1: 
+                    1-blue = 1 chip, 2-blue = 2 chips, 4-blue = 4 chips
+                    From the chips drawn, you may lay down 1 of them as your next chip. Put the other chips back into
+                    the bag. If you do not like what you see, you may put them all back into the bag. If the newly laid
+                    chip also has a bonus, it can also be carried out immediately.
+                 */
+
+                let size = chip.size as usize;
+                self.board.play(chip);
+                if self.is_done() {
+                    return;
+                }
+
+                let base = if self.bag.len() < size {0} else {self.bag.len() - size};
+
+                if let Some(choice) = self.skill.choose_one(&self.bag[base..]) {
+                    let bonus_chip = self.bag.remove(base + choice);
+                    self.play(bonus_chip);
+                }
+
+                self.bag.shuffle(&mut thread_rng());
+            },
+            _ => {
+                self.board.play(chip);
+            },
         }
     }
 
