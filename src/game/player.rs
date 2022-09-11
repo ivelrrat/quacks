@@ -40,6 +40,24 @@ impl Player {
     pub fn play(&mut self, chip: Chip) {
 
         match chip.color.as_str() {
+            "yellow" => {
+                /*
+                    Rule book 1: 
+                     If you draw a yellow chip from your bag directly after a white chip, you may put the white
+                     chip (regard- less of its value) back into the bag. This applies only if the white chip was drawn
+                     directly before the yellow chip.
+                */
+                
+                if let Some(white_chip) = self.board.last_chip().filter(|c| c.color == "white") {
+                    let size = white_chip.size;
+
+                    // Technially this is a decsion and should be available in the player_skill trait, but why would you not want to get rid of white?
+                    self.board.pop_chip_to_bag(&mut self.bag);
+                    self.board.play(Chip::new("was white", size));
+                }
+
+                self.board.play(chip);
+            },
             "blue" => {
                 /*
                     Rule book 1: 

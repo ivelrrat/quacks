@@ -1,5 +1,3 @@
-
-
 macro_rules! chip {
     ($value:tt-$color:tt) => {
         Chip::new(stringify!($color), $value)
@@ -20,6 +18,14 @@ impl Chip {
             color: color.to_string(),
             size,
         }
+    }
+
+    /*
+        Current non-player chips are "droplet" and "was white" and eventually "rat tails".
+    */
+    pub fn is_player_chip(&self) -> bool {
+        static COLORS: [&str; 8] = ["white", "orange", "blue", "red", "yellow", "black", "green", "purple"];
+        COLORS.contains(&self.color.as_str())
     }
 }
 

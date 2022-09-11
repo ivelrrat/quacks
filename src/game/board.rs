@@ -34,7 +34,7 @@ impl Board {
             },
             "orange" => {
                 self.orange_count += 1;
-            }
+            },
             _ => (),
         }
 
@@ -58,7 +58,7 @@ impl Board {
 
     pub fn reset(&mut self, bag: &mut Vec<Chip>) {
         for spot in &mut self.spots {
-            if let Some(chip) = spot.chip.take().filter(|c| c.color != "droplet") {
+            if let Some(chip) = spot.chip.take().filter(|c| c.is_player_chip()) {
                 bag.push(chip);
             }
         }

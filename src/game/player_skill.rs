@@ -172,3 +172,27 @@ impl BuyChipsSkill for BuysBlue {
 }
 
 impl PlayerSkill for BuysBlue {}
+
+pub struct BuysYellow {}
+
+impl BaseSkills for BuysYellow {}
+
+impl BuyChipsSkill for BuysYellow {
+    // Yellow 1 - 8
+    // Yellow 2 - 12
+    // Yellow 4 - 18
+    fn buy_chips(&self, _round: i32, money: i32) -> Option<Vec<Chip>> {
+        match money {
+            3..=7   => { Some(vec![chip!{1-orange}]) },
+            8..=10  => { Some(vec![chip!(1-yellow)]) },
+            11      => { Some(vec![chip!(1-orange), chip!(1-yellow)]) },
+            12..=14 => { Some(vec![chip!(2-yellow)]) },
+            15..=17 => { Some(vec![chip!(1-orange), chip!(2-yellow)]) },
+            18..=20 => { Some(vec![chip!(4-yellow)]) },
+            21..    => { Some(vec![chip!(1-orange), chip!(4-yellow)]) },
+            _       => { None },
+        }
+    }
+}
+
+impl PlayerSkill for BuysYellow {}
