@@ -46,6 +46,8 @@ impl Game {
             }
 
             for player in &mut self.players {
+
+                //TODO: check for the player in the futhest spot to roll die.
                 if !player.board.has_exploded() {
                     player.roll_die();
                 }
