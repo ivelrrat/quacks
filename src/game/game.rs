@@ -62,12 +62,23 @@ impl Game {
 
 /*
     B. Chip Actions
-    ◻ Green
+    ✔ Green
         In Evaluation Phase B, you receive 1 ruby for every green chip that was either the last chip or next to last.
-    ◻ Purple
+
+    ✔ Purple
+         In Evaluation Phase B, count up the purple chips in your pot. If there is 1 purple chip, you receive 1 victory point.
+         If there are 2 purple chips, you receive 1 victory point and 1 ruby.
+         If there are 3 or more purple chips, you receive 2 victory points and you may move your droplet 1 space forward.
+         There is no added bonus for 4 or more chips. However, it is always possible to use a lower action. For example, you
+         can take the bonus for 2 purple chips even though you have 3 chips.
+
     ◻ Black
 */
 fn chip_actions(player: &mut Player) {
+
+    /*
+        GREEN ACTION
+    */
     let green_count: i32 = player.board
         .last_two_chips()
         .iter()
@@ -80,4 +91,30 @@ fn chip_actions(player: &mut Player) {
 
 
     player.rubies += green_count;
+
+    /*
+        PURPLE ACTION
+    */
+    let purple_count: i32 = player.board
+    .spots
+    .iter()
+    .map(|spot| 
+        match spot.chip.as_ref() {
+            Some(c) => if c.color == "purple" {1} else {0},
+            None => 0,
+        }                        
+    ).sum();
+
+    match purple_count {
+        1 => player.points += 1,
+        2 => {
+            player.points += 1;
+            player.rubies += 1;
+        },
+        3.. => {
+            player.points += 2;
+            player.board.droplet += 1;
+        },
+        _ => ()
+    }
 }

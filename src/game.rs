@@ -15,6 +15,7 @@ pub use player_skill::BasicPlayer;
 pub use player_skill::BuysGreen;
 pub use player_skill::BuysBlue;
 pub use player_skill::BuysYellow;
+pub use player_skill::BuysPurple;
 
 const LAST_ROUND: i32 = 9;
 
