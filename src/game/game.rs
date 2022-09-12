@@ -3,48 +3,64 @@ use super::{Chip, chip::chip, Player, LAST_ROUND};
 
 pub struct Game {
     pub name: String,
-    pub player: Player,
+    pub players: Vec<Player>,
 }
 
 impl Game {
     pub fn run(&mut self) -> Result<(), Box<dyn Error>> {
-
-        for i in 1..=LAST_ROUND {
-            let player = &mut self.player;
-
-            // An additional white chip is added in round 6
-            if i == 6 {
-                player.bag.push(chip!{1-white});
-            }
-
-            player.reset();
-            while player.should_draw_chip(i) {
-                let chip = match player.bag.pop() {
-                    None => break,
-                    Some(chip) => chip,
-                };
-
-                player.play(chip);
-                if player.is_done() {
-                    break;
+        
+        for i in 1..=LAST_ROUND {            
+            for player in &mut self.players {
+                
+                // An additional white chip is added in round 6
+                if i == 6 {
+                    player.bag.push(chip!{1-white});
                 }
-                player.handle_flask_descision(i);
+
+                player.reset();
             }
             
-            if !player.board.has_exploded() {
-                player.roll_die();
+            let mut players: Vec<&mut Player> = self.players.iter_mut().collect();
+            while !players.is_empty() {
+                players.retain_mut(|player| {
+                    if !player.should_draw_chip(i) {
+                        return false;
+                    }
+
+                    let chip = match player.bag.pop() {
+                        None => {
+                            return false;
+                        },
+                        Some(chip) => chip,
+                    };
+    
+                    player.play(chip);
+                    if player.is_done() {
+                        return false;
+                    }
+
+                    player.handle_flask_descision(i);
+
+                    return true;
+                });
             }
 
-            chip_actions(player);
+            for player in &mut self.players {
+                if !player.board.has_exploded() {
+                    player.roll_die();
+                }
 
-            player.score(i);
+                chip_actions(player);
 
-            if i < LAST_ROUND {
-                player.handle_buy_chips_decision(i);
-                player.handle_refill_flask_decision(i);
-                player.handle_buy_droplet_decision(i);
+                player.score(i);
+                
+                if i < LAST_ROUND {
+                    player.handle_buy_chips_decision(i);
+                    player.handle_refill_flask_decision(i);
+                    player.handle_buy_droplet_decision(i);
+                }
             }
-            
+
             // println!("\n\nRESULTS - Round {}\n\n", i);
             // println!("{} Remaing chips: {:?}", i, player.bag);
             // println!("{} Board:\n{}", i, player.board);

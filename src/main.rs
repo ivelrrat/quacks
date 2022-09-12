@@ -2,10 +2,10 @@ mod game;
 
 use std::{process, env};
 use game::{Player, Game};
-// use game::BasicPlayer;
+use game::BasicPlayer;
 // use game::BuysBlue;
 // use game::BuysYellow;
-use game::BuysPurple;
+// use game::BuysPurple;
 // use game::BuysGreen;
 
 fn main() {
@@ -15,15 +15,20 @@ fn main() {
         
     println!("Quacks of Quedlinburg - Sim");
 
-    let mut points = 0;
+    let mut points = [0,0,0,0];
     for _i in 0..max_games {
         let mut game = Game {
             name: "Quacks".to_string(),
-            // player: Player::new(BasicPlayer {}),
-            player: Player::new(BuysPurple {}),
-            // player: Player::new(BuysBlue {}),
-            // player: Player::new(BuysYellow {}),
-            // player: Player::new(BuysGreen {}),
+            players: vec![
+                Player::new(BasicPlayer {}),
+                Player::new(BasicPlayer {}),
+                Player::new(BasicPlayer {}),
+                Player::new(BasicPlayer {}),
+                // Player::new(BuysGreen {}),
+                // Player::new(BuysYellow {}),
+                // Player::new(BuysBlue {}),
+                // Player::new(BuysPurple {}),
+            ],
         };
     
         if let Err(err) = game.run() {
@@ -31,9 +36,12 @@ fn main() {
             process::exit(1);
         }
     
-        points += game.player.points;
-        // println!("{}", game.player.points);
+        for (i, player) in game.players.iter().enumerate() {
+            points[i] += player.points;
+        }
     }
 
-    println!("AVG: {points}/{max_games}={}", points as f64 /max_games as f64);
+    for point in points {
+        println!("AVG: {point}/{max_games}={}", point as f64 /max_games as f64);
+    }
 }
