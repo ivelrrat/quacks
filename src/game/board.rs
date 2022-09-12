@@ -3,6 +3,7 @@ use super::Spot;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 
+#[derive(Debug)]
 pub struct Board {
     pub spots: Vec<Spot>,
     pub current_spot: usize,

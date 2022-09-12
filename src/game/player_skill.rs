@@ -1,3 +1,5 @@
+use std::fmt;
+
 use super::{Chip, Board, ExplosionDecision, chip::chip, LAST_ROUND};
 
 pub trait BaseSkills {
@@ -79,6 +81,12 @@ pub trait BuyChipsSkill {
 }
 
 pub trait PlayerSkill: BaseSkills + BuyChipsSkill {}
+
+impl fmt::Debug for dyn PlayerSkill {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "skill")
+    }
+}
 
 
 // The BasicPlayer skill buys Red & Orange chips.

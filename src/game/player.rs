@@ -3,6 +3,7 @@ use rand::thread_rng;
 use rand::prelude::SliceRandom;
 use super::{Board, Chip, chip::chip, PlayerSkill, ExplosionDecision, LAST_ROUND};
 
+#[derive(Debug)]
 pub struct Player {
     pub board: Board,
     pub bag: Vec<Chip>,
