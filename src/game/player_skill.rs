@@ -189,7 +189,16 @@ impl BuyChipsSkill for BuysYellow {
     // Yellow 1 - 8
     // Yellow 2 - 12
     // Yellow 4 - 18
-    fn buy_chips(&self, _round: i32, money: i32) -> Option<Vec<Chip>> {
+    fn buy_chips(&self, round: i32, money: i32) -> Option<Vec<Chip>> {
+
+        if round < 2 {
+            if money >= 3 {
+                return Some(vec![chip!{1-orange}]);
+            }
+
+            return None;
+        }
+
         match money {
             3..=7   => { Some(vec![chip!{1-orange}]) },
             8..=10  => { Some(vec![chip!(1-yellow)]) },
